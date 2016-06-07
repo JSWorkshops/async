@@ -1,0 +1,28 @@
+{
+  "name": "jsworkshop-async-await",
+  "version": "0.0.1",
+  "description": "Workshop where we implement async/await using promises and generators",
+  "main": "index.html",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JSWorkshops/async-await.git"
+  },
+  "keywords": [
+    "async-await",
+    "workshop",
+    "javascript",
+    "ES2016"
+  ],
+  "author": "Marcos Cáceres",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/JSWorkshops/async-await/issues"
+  },
+  "homepage": "https://github.com/JSWorkshops/async-await#readme",
+  "dependencies": {
+    "reveal.js": "^3.3.0"
+  }
+}

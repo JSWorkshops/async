@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Let's implement async/await</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="css/reveal.css">
+  <link rel="stylesheet" href="css/theme/simple.css" id="theme">
+  <!-- For syntax highlighting -->
+  <link rel="stylesheet" href="css/zenburn.css">
+  <!-- If the query includes 'print-pdf', include the PDF print sheet -->
+  <script>
+  if (window.location.search.match(/print-pdf/gi)) {
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = 'css/print/pdf.css';
+    document.getElementsByTagName('head')[0].appendChild(link);
+  }
+  </script>
+</head>
+
+<body>
+  <div class="reveal">
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">
+      <section>
+        <h2>Let's implement async/await!*</h2>
+        <p><small>*terms and conditions apply.</small></p>
+      </section>
+
+      <section>
+        <h3>Promises everywhere...</h3>
+        <pre><code contenteditable class="javascript">
+fetch(url)
+  .then(response => response.json())
+  .then(json => processJson)
+  .catch(handleError)
+  .then(moarThen)
+  .catch(err => throw err)
+        </code></pre>
+      </section>
+
+      <section>
+        <h3>Tomorrow...</h3>
+        <pre><code contenteditable class="javascript">async function getJSON(url){
+  let response = await fetch(url);
+  let result;
+  try{
+    let json = await response.json();
+    result = processJson(json);
+  } catch (err) {
+    result = attempToRecover(err);
+  }
+  return result;
+}
+getJSON(someURL)
+  .then(showIt)
+  .catch(handleError);</code></pre>
+      </section>
+
+      <section data-background="images/the_dream.png" data-background-size="100%" data-background-position="center center">
+
+      </section>
+
+      <section>
+        <h3>How does it work?</h3>
+        <ul>
+          <li class="fragment">Exploits generators + promises.</li>
+          <li class="fragment">Flow control and error handling.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Generator</h3>
+        <pre><code class="javascript" contenteditable>function* getURL(url){
+  //...
+}
+// Generator object - initializes closure
+let getFoo = getURL("/foo");
+        </code></pre>
+      </section>
+
+      <section>
+        <h3>Generator Object API</h3>
+        <ul>
+          <li class="fragment"><code>.next(any value) => {value, done}</code></li>
+          <li class="fragment"><code>.throw(Error) => {value, done}</code></li>
+          <li class="fragment"><code>.return(value) => {value, done}</code></li>
+        </ul>
+      </section>
+      <section>
+        <h3>Generator</h3>
+        <pre><code class="javascript" contenteditable>function* getURL(url){
+  let response = yield fetch(url);
+}
+// Generator object - initializes closure
+let getFoo = getURL("/foo");
+let {value: promise} = getFoo.next();
+        </code></pre>
+      </section>
+      <section data-background="images/prom.png" data-background-size="90%" data-background-position="center center">
+
+      </section>
+      <section data-background="images/prom_gen.png" data-background-size="90%" data-background-position="center center">
+
+      </section>
+      <section>
+        <h3>Generator</h3>
+        <pre><code class="javascript" contenteditable>function* getURL(url){
+  let response = yield fetch(url);
+  return yield response.text();
+}
+// "Generator" object;
+let getFoo = getURL("/foo");
+// Prime the pump - run to first yield!
+let {value: promise} = getFoo.next();
+promise
+  .then(res => getFoo.next(res).value)
+  .then(text => console.log(text));</code></pre>
+      </section>
+      <section>
+        <h3>Error handling</h3>
+        <pre><code class="javascript" contenteditable>promise
+  .then(res => getFoo.next(res).value)
+  .then(text => console.log(text))
+  .catch(err => getFoo.throw(error));</code></pre>
+      </section>
+      <section>
+      <h2>Need to handle multiple "steps"</h2>
+      <pre><code class="javascript" contenteditable>
+async(function* getJSON(url){
+  let response = yield fetch(url);
+  let result;
+  try{
+    let json = yield response.json();
+    result = processJson(json);
+  } catch (err) {
+    result = attempToRecover(err);
+  }
+  return result;
+});</code></pre>
+      </section>
+      <section>
+        <h2>Let's build it!</h2>
+      </section>
+      <section>
+      <h2>Bad times...</h2>
+      <ul>
+        <li>Don't forget <code>yield</code>/<code>await</code></li>
+        <li><code>window.onload = async function foo(){...}</code></li>
+        <li><code>calling foo() with no `.catch`</code></li>
+      </ul>
+      </section>
+    </div>
+  </div>
+  <script src="js/head.min.js"></script>
+  <script src="js/reveal.js"></script>
+  <script>
+  // Full list of configuration options available here:
+  // https://github.com/hakimel/reveal.js#configuration
+  Reveal.initialize({
+    controls: true,
+    progress: true,
+    history: true,
+    center: true,
+
+    theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+    transition: Reveal.getQueryHash().transition || 'fade', // default/cube/page/concave/zoom/linear/fade/none
+
+    // Parallax scrolling
+    //parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+    //parallaxBackgroundSize: '2100px 900px',
+
+    // Optional libraries used to extend on reveal.js
+    dependencies: [{
+      src: 'lib/js/classList.js',
+      condition: function() {
+        return !document.body.classList;
+      }
+    }, {
+      src: 'plugin/markdown/marked.js',
+      condition: function() {
+        return !!document.querySelector('[data-markdown]');
+      }
+    }, {
+      src: 'plugin/markdown/markdown.js',
+      condition: function() {
+        return !!document.querySelector('[data-markdown]');
+      }
+    }, {
+      src: 'plugin/highlight/highlight.js',
+      async: true,
+      callback: function() {
+        hljs.initHighlightingOnLoad();
+      }
+    }, {
+      src: 'plugin/zoom-js/zoom.js',
+      async: true,
+      condition: function() {
+        return !!document.body.classList;
+      }
+    }, {
+      src: 'plugin/notes/notes.js',
+      async: true,
+      condition: function() {
+        return !!document.body.classList;
+      }
+    }]
+  });
+  </script>
+</body>
+
+</html>
