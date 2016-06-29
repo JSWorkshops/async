@@ -4,7 +4,9 @@
   "description": "Workshop where we implement async/await using promises and generators",
   "main": "index.html",
   "scripts": {
-    "test": "test"
+    "mocha": "mocha",
+    "test": "mocha tutorial/*-spec.js",
+    "test:dev": "mocha --watch"
   },
   "repository": {
     "type": "git",
