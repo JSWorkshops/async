@@ -1,0 +1,20 @@
+<!doctype html>
+<h1>XMLHttpRequest using Promises</h1>
+<script>
+// write a wrapper for XMLHttpRequest that returns text
+function getText(url){
+  return new Promise((resolve, reject)=>{
+    const xhr = new XMLHttpRequest();
+    xhr.onerror = reject;
+    xhr.onload = () => {
+      resolve(xhr.responseText);
+    };
+    xhr.open("GET", url);
+    xhr.send();
+  });
+}
+
+getText("text.txt")
+  .then(result => console.log("Got back:",result))
+  .catch(error => console.error("Error!", error));
+</script>
