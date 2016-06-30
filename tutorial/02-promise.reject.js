@@ -9,7 +9,7 @@ chai.should();
 describe("static Promise.reject()", () => {
   it("allows to create immediately rejected promises", () => {
     const error = new Error("pass");
-    const promise = Promise.reject(error);
+    const promise;
     return promise.should.be.rejectedWith(error);
   });
 });

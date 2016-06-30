@@ -3,10 +3,7 @@
 "use strict";
 // Create a wrapper for that implements document.isReady
 document.isReady = new Promise((resolve) => {
-  if (document.readyState === "complete") {
-    return resolve();
-  }
-  window.addEventListener("load", resolve);
+
 });
 
 // Make the body's background change green when ready.

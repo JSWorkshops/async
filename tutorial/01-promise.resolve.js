@@ -8,7 +8,7 @@ chai.should();
 
 describe("static Promise.resolve()", () => {
   it("allows to create immediately resolved promises", () => {
-    const promise = Promise.resolve("pass");
+    const promise;
     return promise.should.become("pass");
   });
 });

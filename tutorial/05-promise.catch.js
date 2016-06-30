@@ -14,7 +14,7 @@ describe(".catch() method", () => {
       reject(reject);
     });
     return promise
-      .catch(err => console.log(`\t ====> ${err.message}`))
+      // catch here
       .then(() => Promise.resolve("recovered"))
       .should.eventually.become("recovered")
   });
@@ -25,7 +25,7 @@ describe(".catch() method", () => {
       throw error;
     });
     return promise
-      .catch(err => "fixed it")
+      //.catch()
       .should.eventually.equal("fixed it");
   });
 

@@ -5,10 +5,8 @@
 function getText(url){
   return new Promise((resolve, reject)=>{
     const xhr = new XMLHttpRequest();
-    xhr.onerror = reject;
-    xhr.onload = () => {
-      resolve(xhr.responseText);
-    };
+    xhr.onerror; //handle error event
+    xhr.onload;// handle load event
     xhr.open("GET", url);
     xhr.send();
   });
@@ -17,4 +15,8 @@ function getText(url){
 getText("text.txt")
   .then(result => console.log("Got back:",result))
   .catch(error => console.error("Error!", error));
+
+getText("doesNotExist.txt")
+  .catch(error => console.error("Error!", error));
+
 </script>

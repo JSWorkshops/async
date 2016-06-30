@@ -9,10 +9,10 @@ chai.should();
 describe("static Promise.race()", () => {
   it("allows us to 'race' promises against each other", () => {
     var promise1 = new Promise((resolve)=>{
-      setTimeout( ()=> resolve("promise 1"), 100);
+      setTimeout( ()=> resolve("promise 1"), 300);
     });
     var promise2 = new Promise((resolve)=>{
-      setTimeout( ()=> resolve("promise 2"), 200);
+      setTimeout( ()=> resolve("promise 2"), 100);
     });
     return Promise.race([promise1, promise2]).should.eventually.become("promise 1");
   });
