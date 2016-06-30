@@ -1,8 +1,9 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
-  <title>Let's implement async/await</title>
+  <title>Promise, generators/iterators, async/await</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -20,6 +21,13 @@
     document.getElementsByTagName('head')[0].appendChild(link);
   }
   </script>
+  <style>
+  .whiteboard h1,
+  .whiteboard h2,
+  .whiteboard h3 {
+    color: white;
+  }
+  </style>
 </head>
 
 <body>
@@ -27,10 +35,351 @@
     <!-- Any section element inside of this container is displayed as a slide -->
     <div class="slides">
       <section>
-        <h2>Let's implement async/await!*</h2>
+        <h2>Promise, generators, async/await</h2>
+      </section>
+      <section class="whiteboard" data-state="problem" data-background="images/blackboard.jpg">
+        <h2>Problem</h2>
+        <p>Async programming in JS is hard.</p>
+        <aside class="notes">
+          <ul>
+            <li>The web platform is a event driven environment.</li>
+            <li>We need to deal with all sorts of events.</li>
+            <li>Mouse events, key events, network events, etc.</li>
+            <li>And we are constantly trying to react to these events.</li>
+            <li>Right now, we have to chain callbacks together to handle events. This is hard today...</li>
+          </ul>
+        </aside>
+      </section>
+      <section class="whiteboard" data-state="problem" data-background="images/blackboard.jpg">
+        <pre class="javascript"><code contenteditable data-trim>
+/* Pyramid of DOOM! */
+try{
+  var url = "someU.data";
+  showIndicator("fadein",
+    downloadData(url, function(data){
+       processData(rawData, function(data){
+          displayData(data, removeIndicator)
+     });
+    });
+  });
+}catch(e){
+  console.log("argh... screw this!");
+  throw e;
+}
+</code></pre>
+        <aside class="notes">
+          <ul>
+            <li>We commonly end up writing code like the above to handle different actions. </li>
+            <li>Dictated by the user experience we want to create.</li>
+            <li>As well as coping with errors - which I didn't do above</li>
+            <li>It gets really complicated. And it's really hard to reason about.</li>
+          </ul>
+        </aside>
+      </section>
+      <section>
+        <h2>Part 1 - Promises</h2>
+      </section>
+      <section data-background="images/barista.jpg">
+        <h2 style="color: white;
+           text-shadow: .01em .01em .02em black;
+           background-color: rgba(0,0,0,.5)">Deferred asynchronous operations</h2>
+        <p class="attribution">photo by <a href="https://www.flickr.com/photos/alper/">Alper Çuğun</a></p>
+      </section>
+      <section>
+        <h2>Promise as token</h2>
+        <img src="images/token.jpg">
+      </section>
+      <section>
+        <h2>Broken promises</h2>
+        <ul>
+          <li class="fragment">"That's not on the menu!"</li>
+          <li class="fragment">"We closed the shop already!"</li>
+          <li class="fragment">"The kitchen is closed!"</li>
+          <li class="fragment">"I hate this person. I refuse."</li>
+        </ul>
+      </section>
+      <section data-background="images/promises.svg" data-background-size="20%" data-background-position="bottom right">
+        <h2>Promises - states</h2>
+        <ul>
+          <li class="fragment">Pending.</li>
+          <li class="fragment">Fulfilled.</li>
+          <li class="fragment">Rejected.</li>
+          <li class="fragment"><code>then</code> - handle fulfill/reject + chain promises.</li>
+          <li class="fragment"><code>catch</code> - errors in the chain.</li>
+        </ul>
+      </section>
+      <section>
+        <pre class="javascript"><code contenteditable data-trim style="font-size: .8em">
+var p1 = Promise.resolve("fulfilled!");
+p1.then((msg) => console.log(msg)); // "fulfilled!"
+
+var p2 = Promise.reject("rejected!");
+p2.then(undefined, (msg) => console.log(msg)); // "Rejected!"
+
+var p3 = new Promise((resolve, reject) => {
+  if (condition) resolve();
+  if (otherCondition) reject();
+  throw new Error("Error!");
+});
+
+//fulfill, reject, catch
+p3.then(success, failure)
+  .catch(recover);
+</code></pre>
+      </section>
+      <section>
+        <pre class="javascript"><code contenteditable data-trim>
+var p = new Promise((resolve,reject)=>{
+  //I'm on vacation in July!
+  if(new Date().getMonth() === 7){
+    reject(new Error("On vacation!"));
+  } else {
+    resolve("Yeah, do it!");
+  }
+});
+p.then(
+  successMsg => console.log(successMsg),
+  rejectMsg => console.log(rejectMsg)
+);
+</code></pre>
+      </section>
+      <section>
+        <pre class="javascript"><code contenteditable data-trim>
+function canIdoTheWork(date){
+  return (date.getMonth() === 7)?
+      Promise.reject(new Error("On vacation!"))
+    : Promise.resolve("Let's do this!");
+}
+canIdoTheWork(new Date()).then(
+  successMsg => console.log(successMsg),
+  rejectMsg => console.log(rejectMsg)
+);
+</code></pre>
+      </section>
+      <section>
+        <pre class="javascript"><code contenteditable data-trim style="font-size: .8em">
+var barista = {
+  skills: new Set(['Americano', 'Latte']),
+  get mood() { return Math.round(Math.random()) },
+  makeCoffee(type = 'Americano') {
+    if (!this.skills.has(type)) {
+      return Promise.reject(new Error(`No ${type} for you!`));
+    }
+    return new Promise((resolve, reject) => {
+      // 1 second to make a coffee
+      setTimeout(() => { // 1 second to make a coffee
+        if(this.mood){
+          return resolve(`Here is your ${type}`);
+        }
+        reject(new Error("I quit!"));
+      }, 1000);
+    });
+  }
+}</code></pre>
+      </section>
+      <section>
+        <pre class="javascript"><code contenteditable data-trim style="font-size: .8em">
+var success = msg => console.log(msg, "thanks!");
+var fail = err => console.log(err);
+
+//reject straight away!
+barista.makeCoffee("milkshake").then(undefined, fail);
+
+//Make me an Americano and a latte
+barista.makeCoffee()
+  .then(() => barista.makeCoffee("Latte"))
+  .then(success).catch(fail);
+</code></pre>
+      </section>
+      <section>
+        <h2>Awaiting multiple promises</h2>
+      </section>
+      <section>
+        <pre class="javascript"><code contenteditable data-trim>
+var car1 = new Car("one"),
+var car2 = new Car("two"),
+var car3 = new Car("three"),
+var carRace = [car1.drive(), car2.drive(), car3.drive()];
+
+Promise.race(carRace).then(e => console.log(e));
+Promise.all(carRace).then(data => console.log(data));
+</code></pre>
+      </section>
+      <section>
+        <h2>Part 2 - Iterables</h2>
+      </section>
+      <section>
+        <h2>How does JS determine if something is iterable?</h2>
+      </section>
+      <section>
+        <h2>Symbol.iterator</h2>
+        <p class="fragment">A zero arguments function that, when called:</p>
+        <ul>
+          <li class="fragment">Returns an object.</li>
+          <li class="fragment">has .next() method.</li>
+          <li class="fragment">returns Object:
+            <ul>
+              <li class="fragment">with a <code>.done</code> and <code>.value</code> property</li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+      <section>
+        <pre><code>
+// A zero arguments function that, when called:
+obj[Symbol.iterator] = function() {
+  // Returns an object
+  return {
+    // has .next() method.
+    next() {
+      // that returns an object with:
+      return {
+        value: "", // value prop
+        done: trueOrFalse, // done prop
+      };
+    }
+  };
+};
+      </code></pre>
+      </section>
+      <section>
+        <h2>Iterables</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Example</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>String</td>
+              <td>s = "hello"</td>
+              <td>"h", "e" ...</td>
+            </tr>
+            <tr>
+              <td>Set</td>
+              <td><code>var set = new Set([1,2,3])</code></td>
+              <td>1,2,3</td>
+            </tr>
+            <tr>
+              <td>Map</td>
+              <td>new Map([["name", value]])</td>
+              <td>["name", value]</td>
+            </tr>
+            <tr>
+              <td>NodeList</td>
+              <td><code>document.querySelectorAll("*")</code></td>
+              <td>HTMLElement</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section>
+        <h2>Fancier Iterators (example)</h2>
+        <ul>
+          <li>map.keys()</li>
+          <li>map.values()</li>
+          <li>map.entries()</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Part 3 - Generator functions</h2>
+      </section>
+      <section class="whiteboard" data-state="problem" data-background="images/blackboard.jpg">
+        <h2>Problem</h2>
+        <p>Hard to represent lazy lists in JS.</p>
+      </section>
+      <section>
+        <h3>Generator functions</h3>
+        <pre><code>
+function* myGenerator(){
+  yield 1;
+}
+var genObj = myGenerator();
+        </code></pre>
+      </section>
+      <section>
+        <h2>yield</h2>
+        <p><q>Yield control of execution at this point</q>.</p>
+      </section>
+      <section>
+        <h3>Generator functions</h3>
+        <pre><code>
+function* myGenerator(){
+  yield 1;
+}
+var genObj = myGenerator();
+var result = myGenerator.next(); //run!
+// result = Object { value: 1, done: false }
+        </code></pre>
+      </section>
+      <section>
+        <h3><code>{value: 1, done: false}</code></h3>
+        <p>This looks familiar...</p>
+      </section>
+      <section>
+        <h3>Generator functions</h3>
+        <pre><code>
+function* myGenerator(value){
+  yield 1;
+  return value;
+}
+var genObj = myGenerator("hello there");
+var result = genObj.next(); //run!
+// result = Object { value: 1, done: false }
+result = genObj.next(); //keep going!
+// result = Object { value: "hello there", done: true }
+        </code></pre>
+      </section>
+      <section>
+        <h3>Generator Object API</h3>
+        <ul>
+          <li class="fragment"><code>.next(any value) => {value, done}</code></li>
+          <li class="fragment"><code>.throw(Error) => {value, done}</code></li>
+          <li class="fragment"><code>.return(value) => {value, done}</code></li>
+        </ul>
+      </section>
+      <section>
+        <h3>Generator functions</h3>
+        <pre><code>
+function* myGenerator(value){
+  let result = yield value;
+  return result;
+}
+var genObj = myGenerator("hello there");
+var value = genObj.next().value; //first run!
+genObj.next(value.toUpperCase());
+console.log(genObj.next().value); // "HELLO THERE"
+        </code></pre>
+      </section>
+      <section data-background="images/iterators_to_generators.png" data-background-size="100%" data-background-position="center center">
+      </section>
+      <section>
+      <h3>What if the yielded value is bad?</h3>
+        <pre><code>
+function* myGenerator(value){
+  let result = "";
+  try{
+    result = yield 1;
+  } catch (err) {
+    result = "recovered";
+  }
+  return result;
+}
+var genObj = myGenerator("hello there");
+var result = gen.next();
+if(typeof result !== string){
+  result = gen.throw(new TypeError("Expected a string"));
+}
+console.log(result); // "Recovered"
+        </code></pre>
+      </section>
+      <section>
+        <h2>Part 4 - Let's implement async/await!*</h2>
         <p><small>*terms and conditions apply.</small></p>
       </section>
-
       <section>
         <h3>Promises everywhere...</h3>
         <pre><code contenteditable class="javascript">
@@ -42,7 +391,6 @@ fetch(url)
   .catch(err => throw err)
         </code></pre>
       </section>
-
       <section>
         <h3>Tomorrow...</h3>
         <pre><code contenteditable class="javascript">async function getJSON(url){
@@ -60,11 +408,8 @@ getJSON(someURL)
   .then(showIt)
   .catch(handleError);</code></pre>
       </section>
-
       <section data-background="images/the_dream.png" data-background-size="100%" data-background-position="center center">
-
       </section>
-
       <section>
         <h3>How does it work?</h3>
         <ul>
@@ -72,7 +417,6 @@ getJSON(someURL)
           <li class="fragment">Flow control and error handling.</li>
         </ul>
       </section>
-
       <section>
         <h3>Generator</h3>
         <pre><code class="javascript" contenteditable>function* getURL(url){
@@ -82,9 +426,8 @@ getJSON(someURL)
 let getFoo = getURL("/foo");
         </code></pre>
       </section>
-
       <section>
-        <h3>Generator Object API</h3>
+        <h3>Generator Object API (revisited)</h3>
         <ul>
           <li class="fragment"><code>.next(any value) => {value, done}</code></li>
           <li class="fragment"><code>.throw(Error) => {value, done}</code></li>
@@ -102,10 +445,8 @@ let {value: promise} = getFoo.next();
         </code></pre>
       </section>
       <section data-background="images/prom.png" data-background-size="90%" data-background-position="center center">
-
       </section>
       <section data-background="images/prom_gen.png" data-background-size="90%" data-background-position="center center">
-
       </section>
       <section>
         <h3>Generator</h3>
@@ -129,8 +470,8 @@ promise
   .catch(err => getFoo.throw(error));</code></pre>
       </section>
       <section>
-      <h2>Need to handle multiple "steps"</h2>
-      <pre><code class="javascript" contenteditable>
+        <h2>Need to handle multiple "steps"</h2>
+        <pre><code class="javascript" contenteditable>
 async(function* getJSON(url){
   let response = yield fetch(url);
   let result;
@@ -147,12 +488,12 @@ async(function* getJSON(url){
         <h2>Let's build it!</h2>
       </section>
       <section>
-      <h2>Bad times...</h2>
-      <ul>
-        <li>Don't forget <code>yield</code>/<code>await</code></li>
-        <li><code>window.onload = async function foo(){...}</code></li>
-        <li><code>calling foo() with no `.catch`</code></li>
-      </ul>
+        <h2>Bad times...</h2>
+        <ul>
+          <li>Don't forget <code>yield</code>/<code>await</code></li>
+          <li><code>window.onload = async function foo(){...}</code></li>
+          <li><code>calling foo() with no `.catch`</code></li>
+        </ul>
       </section>
     </div>
   </div>
