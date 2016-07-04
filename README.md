@@ -1,4 +1,4 @@
-# asyc-await
+# Async: Promise, Generators, Iterators, Async/Await
 Given that we now have the [fundamentals of modern JS](https://github.com/JSWorkshops/fundamentals) down, it's time to focus on two of the more exciting new features of ES6: Promises and Generators.
 
 In this tutorial, we will deep-dive into Promises and Generators (with a little side trip to understanding iterators) - and put what we learned in the fundamentals tutorials into practice. Once we get a handle on them, we will create an implementation of "async/await" - which is an upcoming ES7 feature that makes async programming much easier.
