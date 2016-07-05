@@ -369,11 +369,11 @@ function* myGenerator(value){
   return result;
 }
 var genObj = myGenerator("hello there");
-var result = gen.next();
-if(typeof result !== string){
-  result = gen.throw(new TypeError("Expected a string"));
+var result = genObj.next().value;
+if(typeof result !== "string"){
+  result = genObj.throw(new TypeError("Expected a string"));
 }
-console.log(result); // "Recovered"
+console.log(result.value); // "Recovered"
         </code></pre>
       </section>
       <section>
