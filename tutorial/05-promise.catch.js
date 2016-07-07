@@ -11,11 +11,11 @@ describe(".catch() method", () => {
   it("allows us to catch expected errors", () => {
     const error = new Error("This is a test error!");
     var promise = new Promise((resolve, reject) => {
-      reject(reject);
+      reject(error);
     });
     return promise
       // catch here
-      .then(() => Promise.resolve("recovered"))
+      .then((value) => (true) ? "recovered" : "fail")
       .should.eventually.become("recovered")
   });
 
