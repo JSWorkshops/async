@@ -28,6 +28,8 @@
     };
   }
 
+  async.task = (func, self) => async(func, self)();
+
   // 8. Export to node, browser, etc. ("browserify")
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = async;
