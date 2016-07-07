@@ -19,41 +19,39 @@ function doAsyncThingB(value) {
   });
 }
 
-describe(".then() method", (done) => {
-  // it("allows to handle fulfilled promises", () => {
-  //   const promise = new Promise((resolve) => {
-  //     resolve("fail");
-  //   });
-  //   promise
-  //     .then(
-  //       value => expect(value).to.equal("pass")
-  //     )
-  //     .then(done);
-  // });
+describe(".then() method", () => {
+  it("allows to handle fulfilled promises", () => {
+    const promise = new Promise((resolve) => {
+      resolve("fail");
+    });
+    return promise
+      .then(
+        value => expect(value).to.equal("pass")
+      )
+  });
 
-  // it("allows to handle rejected promises", () => {
-  //   const promise = new Promise((resolve, reject) => {
-  //     reject(new Error("foo!"));
-  //   });
-  //   promise
-  //     .then(
-  //       (resolve, error) => expect(error.message).to.equal("Rejected!")
-  //     )
-  //     .then(done);
-  // });
+  it("allows to handle rejected promises", () => {
+    const promise = new Promise((resolve, reject) => {
+      reject(new Error("foo!"));
+    });
+    return promise
+      .catch(
+        error => expect(error.message).to.equal("Rejected!")
+      );
+  });
 
-  // it("allows us to chain actions", () => {
-  //   return Promise.resolve(doAsyncThingA("fail"))
-  //     .then(doAsyncThingB)
-  //     .should.eventually.become("pass");
-  // });
+  it("allows us to chain actions", () => {
+    return Promise.resolve(doAsyncThingA("fail"))
+      .then(doAsyncThingB)
+      .should.eventually.become("pass");
+  });
 
-  // it("allows us to chain between promise and non-promise functions (monad)", () => {
-  //   const promise = Promise.resolve("fail");
-  //   return promise
-  //     .then(doAsyncThingA)
-  //     .then(value => value)
-  //     .then(doAsyncThingB)
-  //     .should.eventually.become("pass");
-  // });
+  it("allows us to chain between promise and non-promise functions (monad)", () => {
+    const promise = Promise.resolve("fail");
+    return promise
+      .then(doAsyncThingA)
+      .then(value => value)
+      .then(doAsyncThingB)
+      .should.eventually.become("pass");
+  });
 });
