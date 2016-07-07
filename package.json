@@ -6,7 +6,7 @@
   "scripts": {
     "mocha": "mocha",
     "start": "node index.js",
-    "test": "mocha tutorial/*-spec.js",
+    "test": "mocha tutorial/*.js",
     "test:dev": "mocha --watch"
   },
   "repository": {
