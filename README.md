@@ -20,5 +20,9 @@ In detail, what we will cover:
   * theory/mechanics, and API.
 * Using Generators + Promises to implement "async/await"
 
+
+## Resources 
+ * [An Introduction to Iteration in ES6 with Generator Functions](https://www.youtube.com/watch?v=wLOOFh8qoWA) 
+
 ## Code of Conduct
 Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
